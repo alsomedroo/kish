@@ -1,126 +1,123 @@
-import React, {useRef} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  TextInput,
-  Platform,
-  TouchableOpacity,
-} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import React, { useState, useRef } from "react"
+import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable, Dimensions } from "react-native"
+import { useNavigation } from "@react-navigation/native"
+import Icon from "react-native-vector-icons/Feather"
+
+const { width } = Dimensions.get("window")
 
 const OtpScreen = () => {
-  const navigation = useNavigation();
-  const [otp, setOtp] = React.useState(['', '', '', '', '', '']);
-  const inputs = useRef([]); // Reference for all TextInput components
-  const handleResendOtp = () => {
-    //pass;
-  };
-  const handleChangeText = (data, index) => {
-    const newOtp = [...otp];
-    newOtp[index] = data;
-    setOtp(newOtp);
+  const navigation = useNavigation()
+  const [otp, setOtp] = useState(["", "", "", "", "", ""])
+  const inputs = useRef([])
 
-    // Focus next input automatically if not the last input and data is entered
-    if (index < 5 && data) {
-      inputs.current[index + 1]?.focus();
+  const handleChangeText = (text, index) => {
+    const newOtp = [...otp]
+    newOtp[index] = text
+    setOtp(newOtp)
+
+    if (index < 5 && text) {
+      inputs.current[index + 1]?.focus()
     }
-    if (index === 5 && data) {
-      console.log('Submit Otp');
-      navigation.navigate('Birth');
+    if (index === 5 && text) {
+      navigation.navigate("Birth")
     }
-  };
+  }
 
-  const handleKeyPress = ({nativeEvent}, index) => {
-    if (nativeEvent.key === 'Backspace') {
-      const newOtp = [...otp];
-
-      // If the current input is empty, focus on the previous input and clear it
-      if (otp[index] === '') {
-        if (index > 0) {
-          inputs.current[index - 1]?.focus();
-          newOtp[index - 1] = ''; // Clear the previous index
-        }
-      } else {
-        newOtp[index] = ''; // Clear the current input
+  const handleKeyPress = (event, index) => {
+    if (event.nativeEvent.key === "Backspace") {
+      if (index > 0 && !otp[index]) {
+        inputs.current[index - 1]?.focus()
       }
-
-      setOtp(newOtp);
     }
-  };
+  }
+
+  const handleResendOtp = () => {
+    // Implement OTP resend logic here
+    console.log("Resend OTP")
+  }
 
   return (
-    <SafeAreaView>
-      <View>
-        <Text
-          style={{
-            marginTop: 50,
-            textAlign: 'center',
-            color: 'black',
-            fontSize: 24,
-            fontWeight: 'bold',
-          }}>
-          Verification Code
-        </Text>
-        <Text
-          style={{
-            marginTop: 10,
-            textAlign: 'center',
-            color: 'gray',
-            fontSize: 16,
-          }}>
-          Enter the 6-digit OTP sent to your email
-        </Text>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          width: '80%',
-          marginTop: 50,
-          justifyContent: 'space-between',
-        }}>
-        {otp.map((data, index) => (
-          <TextInput
-            ref={el => (inputs.current[index] = el)} // Attach ref to each input
-            style={styles.input}
-            key={index}
-            value={data}
-            keyboardType="numeric"
-            maxLength={1}
-            autoFocus={index === 0 ? true : false}
-            onChangeText={text => handleChangeText(text, index)}
-            onKeyPress={event => handleKeyPress(event, index)} // Handle backspace
-          />
-        ))}
-      </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Icon name="lock" size={40} color="#00695C" style={styles.icon} />
+        <Text style={styles.title}>Verification Code</Text>
+        <Text style={styles.subtitle}>Enter the 6-digit code sent to your email</Text>
 
-      <TouchableOpacity>
-        <Text
-          style={{
-            color: '#007AFF',
-            marginTop: 40,
-            fontSize: 18,
-            onPress: {handleResendOtp},
-          }}>
-          Resend OTP
-        </Text>
-      </TouchableOpacity>
+        <View style={styles.otpContainer}>
+          {otp.map((digit, index) => (
+            <TextInput
+              key={index}
+              style={styles.otpInput}
+              value={digit}
+              onChangeText={(text) => handleChangeText(text, index)}
+              onKeyPress={(event) => handleKeyPress(event, index)}
+              keyboardType="numeric"
+              maxLength={1}
+              ref={(el) => (inputs.current[index] = el)}
+            />
+          ))}
+        </View>
+
+        <Pressable style={styles.resendButton} onPress={handleResendOtp}>
+          <Text style={styles.resendText}>Resend Code</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
-  input: {
-    height: 50,
-    width: 50,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 8,
-    textAlign: 'center',
-    fontSize: 18,
-    backgroundColor: '#f9f9f9',
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5", // Milky white background
   },
-});
+  content: {
+    flex: 1,
+    alignItems: "center",
+    padding: 20,
+  },
+  icon: {
+    marginTop: 40,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#004D40", // Darker teal for better contrast
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: "#00695C", // Dark teal for subtitle
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 30,
+  },
+  otpInput: {
+    width: width * 0.13,
+    height: width * 0.13,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#00695C", // Dark teal border
+    fontSize: 24,
+    textAlign: "center",
+    backgroundColor: "#FFFFFF",
+    color: "#004D40", // Dark teal for input text
+  },
+  resendButton: {
+    marginTop: 20,
+  },
+  resendText: {
+    color: "#FF7043", // Coral for the resend text
+    fontSize: 16,
+    fontWeight: "600",
+  },
+})
 
-export default OtpScreen;
+export default OtpScreen
+
